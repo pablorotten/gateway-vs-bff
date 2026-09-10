@@ -22,5 +22,5 @@ Show real production experience with API gateways, honest reflection on misuse, 
 ## Context files
 
 - `context/tyk-offer.md` — Full job description
-- `context/technical-context.md` — What we actually built and why
+- `context/tyk-use-case.md` — What we actually built and why
 - `context/video-ideas.md` — Ideas, ratings, and strategy

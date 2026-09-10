@@ -37,7 +37,7 @@ Honest, learn-in-public framing. Not fake hype.
 ## Files
 
 - `context/tyk-offer.md` - Full job description
-- `context/technical-context.md` - Architecture and lessons learned
+- `context/tyk-use-case.md` - Architecture and lessons learned
 - `context/video-ideas.md` - All ideas with ratings
 
 ## Constraints
