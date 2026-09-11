@@ -35,18 +35,18 @@ Yes. Gateways have some in-gate scripting capabilities that allow you to do some
 
 But those are not meant to be used to implement a BFF. This is not an "App". It's just Gateway configuration.
 
-That is fine for glue (rename a field, add a header, mock a 200, forward a call...). It is a bad place for product logic (filter by date, merge shipments+trials, reshape per client).
+That is fine for glue (rename a field, add a header, mock a 200, forward a call...). It is a bad place for product logic (filter by date, merge orders+customers, reshape per client).
 
 💀 TYK virtual endpoints was my trap. It's such a powerful tool — too good, even [HERE TALK ABOUT TYK VIRTUAL ENDPOINTS, SOMETHING QUICK BUT SHOWCASE ITS POWER]. So good you'll want to use it for everything, and you'll end up using it for something it was never meant for. Don't let this great tool fool you. Be clear about what it's for and what it isn't. If you misuse it and it goes wrong, that's on you.
 
 ### Example 1: it looks like it works, but it is a trap
-Backend: `GET /internal/shipments` returns a huge blob (every shipment, every field).
+Backend: `GET /internal/orders` returns a huge blob (every order, every field).
 
-Client wants: `GET /shipments?from=2024-01-01&to=2024-03-01` with `{ id, date, co2 }` only.
+Client wants: `GET /orders?from=2024-01-01&to=2024-03-01` with `{ id, date, total }` only.
 
 Virtual endpoint:
 
-1. `TykMakeHttpRequest` to `/internal/shipments`
+1. `TykMakeHttpRequest` to `/internal/orders`
 2. `JSON.parse` the body
 3. Filter by date in a `for` loop
 4. Map to three fields
@@ -54,7 +54,7 @@ Virtual endpoint:
 
 Pilot client is happy. You didn't touch Scala. You didn't stand up a service. This is the moment you think the gateway *is* the BFF.
 
-Next week the same client wants shipments **joined with trials**, filtered by site, with CO2 rolled up by month. Another client wants a different shape. Timezones are wrong. The internal payload is 50MB and you are filtering it in ES5 on the gateway.
+Next week the same client wants orders **joined with customers**, filtered by region, with revenue rolled up by month. Another client wants a different shape. Timezones are wrong. The internal payload is 50MB and you are filtering it in ES5 on the gateway.
 
 Now you have:
 
@@ -136,9 +136,9 @@ As you can see, a Gateway and a BFF are complementary. You need both to have a c
 
 **Glue** — tiny wiring, no real rules. Rename a field, add a header, mock a 200, forward a call. It barely changes. Fine in the gateway.
 
-**Not glue / product logic** — filter by date, merge shipments+trials, reshape per client. That belongs in a BFF.
+**Not glue / product logic** — filter by date, merge orders+customers, reshape per client. That belongs in a BFF.
 
-**Orchestration** — one client call becomes several backend calls, then you combine the result. Example: client hits `GET /dashboard`. BFF calls shipments, trials, and CO2, merges them, returns one JSON. Gateway routing is “send this path there.” Orchestration is “call N services, wait, stitch, reply.”
+**Orchestration** — one client call becomes several backend calls, then you combine the result. Example: client hits `GET /dashboard`. BFF calls orders, customers, and invoices, merges them, returns one JSON. Gateway routing is “send this path there.” Orchestration is “call N services, wait, stitch, reply.”
 
 **Virtual endpoints** — Tyk’s in-process JS (JSVM) that can terminate a request, call upstreams, and return a custom body. Other gateways have the same escape hatch under other names: Kong Lua/JS plugins, Apigee JS + ServiceCallout, Azure APIM `send-request`, NGINX njs. AWS Lambda behind API Gateway is closer to a real BFF (separate runtime).
 

@@ -6,7 +6,7 @@ We had a B2B SaaS product — **Supply App** — a web application for supply ch
 
 It started as a normal UI-only web app. But clients kept asking for **API integration**: they wanted to connect their own systems to ours automatically — update workflows, run optimizations and simulations, and retrieve results **without any human interaction**.
 
-The trigger was a **key client (Novo Nordisk)** who requested the API integration and was ready to pay for it. It started as a Proof of Concept for that one client.
+The trigger was a **key client** who requested the API integration and was ready to pay for it. It started as a Proof of Concept for that one client.
 
 The new API needed to expose **lean, filtered endpoints** (e.g. filtered by date ranges) — while the existing system only had generic internal endpoints that returned large data chunks (client data, trials, shipments, CO2 emissions, etc.).
 
