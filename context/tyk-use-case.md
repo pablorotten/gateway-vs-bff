@@ -27,7 +27,7 @@ Constraints:
 - Wrote internal docs (how the platform works, how to add endpoints, how to deploy/test) and external docs (how to use the API)
 - Supported customers through questions and incidents
 
-Results:apigee
+Results:
 
 - **~20 endpoints** created to satisfy different needs
 - Started as PoC → productized → **adopted by all existing accounts**, **5 new customers integrated**

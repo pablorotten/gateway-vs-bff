@@ -33,7 +33,7 @@ But those are not meant to be used to implement a BFF. This is not an "App". It'
 
 That is fine for glue (rename a field, add a header, mock a 200, forward a call...). It is a bad place for product logic (filter by date, merge shipments+trials, reshape per client).
 
-### Example 1 — it looks like it works
+### Example 1: it looks like it works, but it is a trap
 Backend: `GET /internal/shipments` returns a huge blob (every shipment, every field).
 
 Client wants: `GET /shipments?from=2024-01-01&to=2024-03-01` with `{ id, date, co2 }` only.
@@ -48,19 +48,49 @@ Virtual endpoint:
 
 Pilot client is happy. You didn't touch Scala. You didn't stand up a service. This is the moment you think the gateway *is* the BFF.
 
-### Example 2 — it falls apart
-Next week the same client wants shipments **joined with trials**, filtered by site, with CO2 rolled up by month. Another client wants a different shape. Timezones are wrong. The internal payload is 50MB and you are filtering it in ES5 on the gateway. A bug ships as a dashboard paste / gateway reload, with no unit test.
+Next week the same client wants shipments **joined with trials**, filtered by site, with CO2 rolled up by month. Another client wants a different shape. Timezones are wrong. The internal payload is 50MB and you are filtering it in ES5 on the gateway.
 
 Now you have:
 
 - Domain rules living in API config
-- No CI for the logic that customers pay for
+- No CI for the logic that customers pay for within the gateway (need to implement with external Postman/Newman tests)
 - Iteration speed tied to gateway deploys, not an app pipeline
 - Edge concerns (keys, rate limits) mixed with app concerns (filters, merges)
 
 You did not avoid a BFF. You implemented a BFF in the worst runtime: config + a sandbox.
 
-### When virtual endpoints *are* a good idea
+You *can* still put Postman/Newman in CI after the gateway. That *is* CI for the customer API. The problem is you cannot test **inside the tool that holds the logic**. Tests live in a second tool. Two deploys to check one function.
+
+### Example 3: Deploy and test fake vs real BFF
+
+You implmenet a change in **the middleware itself**, e.g. you tweak one aggregation function for performance. Scala and Tyk routing stay put.
+
+#### Fake BFF (logic in the gateway)
+
+**Where the tests live:** Postman/Newman; a second tool, outside the gateway. You cannot `npm test` the aggregation next to the code.
+
+**What you deploy:** gateway config + reload Tyk (whole gateway), then roll that to each tenant.
+
+```
+edit JS / plugin in the gateway
+  → tests: Postman after the gateway is up (need Tyk + Scala)
+  → deploy: gateway reload
+  → blast radius: the gateway
+```
+
+#### Real BFF (standalone app)
+
+**Where the tests live:** next to the code. `npm test` on `aggregate()`, mocked Scala, on the PR. Postman can still be extra e2e — it should not be the only way.
+
+**What you deploy:** the BFF container only. Tyk and Scala untouched.
+
+```
+edit aggregate() in the BFF app
+  → tests: npm test in CI (no Tyk, no Scala)
+  → deploy: BFF container
+  → blast radius: one service
+```
+### When scripting in Gateway *is* a good idea
 Stable glue, not a product:
 
 - Mock or terminate a route (`GET /health` style, or "this method is gone")
@@ -70,11 +100,15 @@ Stable glue, not a product:
 
 Rule of thumb: if a product manager will ask to change the response shape next sprint, it does not belong in a virtual endpoint. Put Tyk in front for auth, rate limits, routing. Put a real BFF (Fastify, Hono, whatever) behind it for filter / merge / reshape.
 
-
 ## How to implement a BFF
 
-BFF is a pattern, not a product.
-Use a normal HTTP app (Fastify/Hono/Nest/Go) that talks to backends, merges/filters, and returns the client shape. Dedicated “BFF platforms” are rare; GraphQL or tRPC are optional, not required.
+BFF is a pattern, not a product. 
+Keep it simple.
+Use a normal HTTP app (Fastify/Hono/Nest/Go) that talks to backends, merges/filters, and returns the client shape.
+
+## Gateway 💖 BFF
+
+As you can see, a Gateway and a BFF are complementary. You need both to have a complete API strategy. The Gateway is the edge, the BFF is the app logic. 
 
 ## Concepts
 
