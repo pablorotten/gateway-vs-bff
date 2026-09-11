@@ -21,21 +21,15 @@ It is responsible for orchestrating calls to multiple backend services, filterin
 Can you build your UI views by making single API calls? If yes, then you do not need a bff. If single UI views are requiring 2 to 3 calls, maybe to the same API maybe to multiple API's, then you can alleviate this with a bff.
 
 
-## The trap of Virtual Endpoints
-But I can do that in the gateway itself! I can create virtual endpoints that will call the backend and filter/reshape the data.
+## The trap of fake BFFs
+But I can do that in the gateway itself! 
 
-Yes. Gateways like Tyk even documents this as a feature. Virtual endpoints run JavaScript inside the gateway (JSVM). They can call upstreams with `TykMakeHttpRequest` / `TykBatchRequest`, mash the JSON, and return one response. Tyk's own docs say: aggregate multiple internal services and skip "starting up an aggregation service."
+Yes. Gateways have some in-gate scripting capabilities that allow you to do some filtering and reshaping of the data. Some examples of this are:
+* Kong functions
+* Apigee Service Callouts
+* Tyk Virtual Endpoints
 
-That sentence is the trap. It describes a **BFF job** and sells you a **gateway plugin**.
-
-### What a virtual endpoint actually is
-It is not Node. It is not an app. It is ES5 JavaScript in the gateway process.
-
-- Enable `enable_jsvm: true`, paste a function (or a base64 blob in the API definition).
-- The function **terminates** the request. It must build the HTTP response itself (`TykJsResponse`).
-- Outbound calls are **synchronous**. The gateway thread waits.
-- Logs are `log()` into gateway logs. No real tests, debugger, types, or npm.
-- Function names must be unique across the whole API portfolio (shared VM).
+But those are not meant to be used to implement a BFF. This is not an "App". It's just Gateway configuration.
 
 That is fine for glue (rename a field, add a header, mock a 200, forward a call...). It is a bad place for product logic (filter by date, merge shipments+trials, reshape per client).
 
@@ -81,3 +75,17 @@ Rule of thumb: if a product manager will ask to change the response shape next s
 
 BFF is a pattern, not a product.
 Use a normal HTTP app (Fastify/Hono/Nest/Go) that talks to backends, merges/filters, and returns the client shape. Dedicated “BFF platforms” are rare; GraphQL or tRPC are optional, not required.
+
+## Concepts
+
+**Upstream** — the service behind the gateway (your Scala API). A virtual endpoint **calls upstreams** when its JS does `TykMakeHttpRequest` to those backends, then builds the client response. Client hits Tyk; Tyk’s JS hits Scala; Tyk answers the client.
+
+**Glue** — tiny wiring, no real rules. Rename a field, add a header, mock a 200, forward a call. It barely changes. Fine in the gateway.
+
+**Not glue / product logic** — filter by date, merge shipments+trials, reshape per client. That belongs in a BFF.
+
+**Orchestration** — one client call becomes several backend calls, then you combine the result. Example: client hits `GET /dashboard`. BFF calls shipments, trials, and CO2, merges them, returns one JSON. Gateway routing is “send this path there.” Orchestration is “call N services, wait, stitch, reply.”
+
+**Virtual endpoints** — Tyk’s in-process JS (JSVM) that can terminate a request, call upstreams, and return a custom body. Other gateways have the same escape hatch under other names: Kong Lua/JS plugins, Apigee JS + ServiceCallout, Azure APIM `send-request`, NGINX njs. AWS Lambda behind API Gateway is closer to a real BFF (separate runtime).
+
+**Experience API** — Salesforce / Apigee name for a client-facing facade. People often call the gateway proxy a BFF. Best practice even there: keep the proxy light; put complex logic in a real service (Cloud Run, etc.). Same split, muddier words.
