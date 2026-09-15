@@ -1,7 +1,16 @@
 # Gateway vs BFF
-You need to build and expose a restful API service for your existing backend services. The first thing it comes to your mind is a **Gateway**. 
 
-But... are you sure is the **only** thing you need? Aren't you missing something before?
+## We put a Gateway where a BFF belonged.
+* You've got a web app.
+* Happy users. They use it every day.
+* Then the ideas start coming in.
+  * Ship a mobile app
+  * Integrate with a 3rd party service
+  * Provide access to bots and agents
+* Either way you need a REST API
+* Exposing endpoints can be dangerous:
+* First thing that comes to mind? A Gateway.
+* But... is that really the only thing you need? Or are you skipping a step?
 
 * You may have a mature product with a secure but slow pipeline.
 * Your product have some generic and simple endpoints that return large data chunks.
@@ -37,7 +46,9 @@ But those are not meant to be used to implement a BFF. This is not an "App". It'
 
 That is fine for glue (rename a field, add a header, mock a 200, forward a call...). It is a bad place for product logic (filter by date, merge orders+customers, reshape per client).
 
-💀 TYK virtual endpoints was my trap. It's such a powerful tool — too good, even [HERE TALK ABOUT TYK VIRTUAL ENDPOINTS, SOMETHING QUICK BUT SHOWCASE ITS POWER]. So good you'll want to use it for everything, and you'll end up using it for something it was never meant for. Don't let this great tool fool you. Be clear about what it's for and what it isn't. If you misuse it and it goes wrong, that's on you.
+💀 TYK virtual endpoints was my trap. It's such a powerful tool — too good, even. 
+💀 [HERE TALK ABOUT: TYK Virtual Endpoints, single-tenant Docker, chose TYK because OSS / no per-client license, ~20 endpoints, productized, still kept TYK for auth/rate limits/routin]. 
+💀 So good you'll want to use it for everything, and you'll end up using it for something it was never meant for. Don't let this great tool fool you. Be clear about what it's for and what it isn't. If you misuse it and it goes wrong, that's on you.
 
 ### Example 1: it looks like it works, but it is a trap
 Backend: `GET /internal/orders` returns a huge blob (every order, every field).
@@ -123,8 +134,9 @@ Use a normal HTTP app (Fastify/Hono/Nest/Go) that talks to backends, merges/filt
 
 If you're still curious about how it ended. 
 We figured out what endpoints our clients needed, so we got rid of the virtual endpoints / fake BFF and directly implemented the logic in the final app.
-We got lucky because all our clients wanted more or less the same shape, so we could write all those endpoints in one single sprint and we were done.
+Start with a BFF. Put TYK in front when you need the edge. We did it backwards.
 We still kepy TYK as Gatway using it right for what it is: auth, rate limits, routing, versioning, policies and analytics.
+TYK is excellent at the edge. Don’t force it to be the app.
 
 ## Gateway 💖 BFF
 
