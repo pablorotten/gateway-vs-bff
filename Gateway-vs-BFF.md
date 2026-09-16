@@ -14,10 +14,10 @@
 
 ## But don't you need something else?
 
-* Maybe your backend is scattered across microservices. To satisfy a single client request, you might need to call multiple backend services, filter and reshape the data
-* Or maybe you already have an internal API that is not client-friendly or not safe to expose. So you need to do some lifting and reshaping of the data before it reaches the client.
-* Could be that there's a legacy backend that you can't change
-* Or maybe you want to create an MVP for a new client and the release process is robust but too slow for a pilot.
+* Perhaps your backend is composed of multiple services. You have to make multiple API calls, filter the results, and merge them before sending the response to the client.
+* Or maybe the internal API isn't something you'd expose as-is.
+* Could be that there's a legacy backend that you can't change.
+* Or you need a pilot, but shipping a new endpoint in the core app takes forever.
 
 * In any case, you need a logic layer between your client and your backend services. 
 * And we already have it right? We can write that logic in the gateway itself... MEEC!!!! 💀⚠️🚨 ERROR 👺😈👹
