@@ -8,8 +8,9 @@
   * Integrate with a 3rd party service
   * Provide access to bots and agents
 * Either way you need a REST API
-* Exposing endpoints can be dangerous:
+* Exposing endpoints can be dangerous: scrapers, brute force, noisy neighbors.
 * First thing that comes to mind? A Gateway.
+* You set up rate limits, auth, quotas.
 * But... is that really the only thing you need? Or are you skipping a step?
 
 * You may have a mature product with a secure but slow pipeline.
@@ -155,3 +156,38 @@ As you can see, a Gateway and a BFF are complementary. You need both to have a c
 **Virtual endpoints** — Tyk’s in-process JS (JSVM) that can terminate a request, call upstreams, and return a custom body. Other gateways have the same escape hatch under other names: Kong Lua/JS plugins, Apigee JS + ServiceCallout, Azure APIM `send-request`, NGINX njs. AWS Lambda behind API Gateway is closer to a real BFF (separate runtime).
 
 **Experience API** — Salesforce / Apigee name for a client-facing facade. People often call the gateway proxy a BFF. Best practice even there: keep the proxy light; put complex logic in a real service (Cloud Run, etc.). Same split, muddier words.
+
+## Popular API Gateway Providers
+
+When choosing an API gateway, you have several strong options beyond TYK. Here's a quick overview of the most popular alternatives:
+
+### Open Source
+
+**Kong** — Built on NGINX/OpenResty. Very popular, huge plugin ecosystem. Lua-based plugins for customization. Strong community edition. Good if you want Lua scripting or need NGINX performance.
+
+**Apache APISIX** — Built on NGINX/OpenResty like Kong, but newer. Lua plugins, dynamic routing, real-time analytics. Growing fast in the CNCF ecosystem.
+
+**Traefik** — Cloud-native, auto-discovers services (Docker, Kubernetes). Great for microservices. Less traditional gateway features but excellent for dynamic environments.
+
+**NGINX** — Not a full API gateway by default, but extremely capable with NGINX Plus or custom Lua scripting. The foundation many gateways are built on.
+
+### Enterprise / Cloud-Managed
+
+**Apigee (Google Cloud)** — Enterprise-grade API management. Service callouts for in-gate logic. Strong analytics, monetization, developer portal. Paid product, serious enterprise tooling.
+
+**AWS API Gateway** — Fully managed, serverless-first. Deep integration with Lambda. Pay-per-request pricing. Good if you're already in AWS ecosystem.
+
+**Azure API Management** — Microsoft's offering. Strong for Azure/.NET shops. `send-request` policy for in-gate logic. Enterprise features with Azure integration.
+
+**MuleSoft (Salesforce)** — Enterprise integration platform, not just a gateway. ESB-style with API management. Heavy, but powerful for complex enterprise architectures.
+
+### What They Have in Common
+
+All these gateways share the same core edge concerns:
+- Authentication & API keys
+- Rate limiting & quotas
+- Routing & versioning
+- Analytics & monitoring
+- Plugin/middleware systems for customization
+
+The trap is the same across all of them: **they are edge tools, not application layers**. Every gateway has some scripting escape hatch (Kong Lua, Apigee Service Callouts, TYK Virtual Endpoints, Azure `send-request`). Those are for glue, not product logic. The pattern holds: put the gateway at the edge, put a BFF behind it when you need application logic.
