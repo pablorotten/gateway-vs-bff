@@ -1,6 +1,6 @@
 # Gateway vs BFF
 
-## We put a Gateway where a BFF belonged.
+## You need a Gateway ✔️
 * You've got a web app.
 * Happy users. They use it every day.
 * Then the ideas start coming in.
@@ -10,21 +10,26 @@
 * Either way you need a REST API
 * Exposing endpoints can be dangerous: scrapers, brute force, noisy neighbors.
 * First thing that comes to mind? A Gateway.
-* You set up rate limits, auth, quotas.
-* But... is that really the only thing you need? Or are you skipping a step?
+* A software layer between your client and your backend services where you can set up rate limits, auth, quotas.
 
-* You may have a mature product with a secure but slow pipeline.
-* Your product have some generic and simple endpoints that return large data chunks.
-* Your clients want to filter and reshape the data
-* Writting new endpoints in your backend is slow and painful. Not ideal for a pilot or a proof of concept.
-* So you think: "I will put a Gateway in front of my backend and I will be able to filter and reshape the data for my clients".
-* MEEC!!! Wrong answer! For sure, a Gateway is a good idea. It will help you with authentication, rate limiting, routing, versioning, policies and analytics. But it is not enough. 
-* You need a **BFF** (Backend for Frontend)! And this should be the first step in your API strategy. 
+## But don't you need something else?
 
-💀 I learned this the hard way. I will share my experience with you, so you can avoid the same mistakes I did.
+* Maybe your backend is scattered across microservices. To satisfy a single client request, you might need to call multiple backend services, filter and reshape the data
+* Or maybe you already have an internal API that is not client-friendly or not safe to expose. So you need to do some lifting and reshaping of the data before it reaches the client.
+* Could be that there's a legacy backend that you can't change
+* Or maybe you want to create an MVP for a new client and the release process is robust but too slow for a pilot.
+
+* In any case, you need a logic layer between your client and your backend services. 
+* And we already have it right? We can write that logic in the gateway itself... MEEC!!!! 💀⚠️🚨 ERROR 👺😈👹
+* DON'T DO THAT. You will regret it. 
+* You will be stuck with a gateway that is hard to maintain, hard to test, and hard to iterate on.
+* The gateway is not the right place for product logic. 💀 I learned this the hard way
+
+
+* And I can tell. You need a Friend, a Best Friend Forever, a BFF 💖 
 
 ## What is a BFF?
-BFF = Backend for Frontend. A BFF is a service that sits between your client and your backend services. 
+BFF stands for **Backend for Frontend**. A BFF is a service that sits between your client and your backend services. 
 
 The goal of a BFF is to adapt your API to the specific needs, requirements and experience of a specific client. You could not care and just use an API that returns the same data for all clients, or you could have one general purpose API that allows you to filter the data that you need on different clients. Typically, I think that BFF will result in the cleanest solution to this problem.
 
@@ -32,6 +37,19 @@ It is responsible for orchestrating calls to multiple backend services, filterin
 
 Can you build your UI views by making single API calls? If yes, then you do not need a bff. If single UI views are requiring 2 to 3 calls, maybe to the same API maybe to multiple API's, then you can alleviate this with a bff.
 
+## Why a BFF is a good idea
+
+### Case 1: Agile middleware
+
+* The main app has a very basic API. Generic endpoints. Large data chunks.
+* The core pipeline is slow and rigorous. Fine for the product. Terrible for a REST API pilot.
+* You need a middleware with agile, flexible development — room to experiment and play around until the contract is right.
+* That middleware is a BFF. Not the gateway.
+* Once you have a final, tested, mature list of endpoints clients are happy with, you go back to the real backend and build those endpoints for real (yes, through the slow process).
+* Why push them down? Stop overloading the backend with many calls from the BFF. Get more customized, performant endpoints next to the data.
+* Success is **not** getting rid of the BFF. Success is putting logic in the right layer.
+* Promote stable domain endpoints into the backend. Keep the BFF for orchestration, client-specific shaping, and the next experiment.
+* Mature product looks like: `Client → Gateway → thin BFF → richer backend`. Not "gateway straight to backend, BFF deleted."
 
 ## The trap of fake BFFs
 But I can do that in the gateway itself! 
