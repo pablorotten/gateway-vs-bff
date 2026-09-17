@@ -14,19 +14,18 @@
 
 ## But don't you need something else?
 
-* Perhaps your backend is composed of multiple services. You have to make multiple API calls, filter the results, and merge them before sending the response to the client.
-* Or maybe the internal API isn't something you'd expose as-is.
-* Could be that there's a legacy backend that you can't change.
-* Or you need a pilot, but shipping a new endpoint in the core app takes forever.
+- [x] Perhaps your backend is composed of multiple services. You have to make multiple API calls and merge them before sending the response to the client.
+- [ ] Or maybe the internal API isn't something you'd expose as-is for security or performance reasons.
+- [ ] Could be that there's a legacy backend that you can't change (XML to JSON) but you need to expose a modern API to your clients.
+- [ ] Or you need a pilot for a client, but shipping a new endpoint in the core app takes forever (Show a release pipeline with code reviews etc and engineer rejecting and a snail etc...)
 
-* In any case, you need a logic layer between your client and your backend services. 
-* And we already have it right? We can write that logic in the gateway itself... MEEC!!!! 💀⚠️🚨 ERROR 👺😈👹
-* DON'T DO THAT. You will regret it. 
-* You will be stuck with a gateway that is hard to maintain, hard to test, and hard to iterate on.
-* The gateway is not the right place for product logic. 💀 I learned this the hard way
+* In any case, you need a logic layer between the client and the backend.
+* And we already have one, right? Just write it in the gateway...
+* 🚨MEEC🚨 DON'T. DO. THAT.
+* You'll get something hard to test, hard to maintain, and slow to change.
+* The gateway is the wrong place for product logic. 💀 I learned this the hard way.
 
-
-* And I can tell. You need a Friend, a Best Friend Forever, a BFF 💖 
+* All you need is a Friend, a Best Friend Forever, a BFF 💖 
 
 ## What is a BFF?
 BFF stands for **Backend for Frontend**. A BFF is a service that sits between your client and your backend services. 
