@@ -15,14 +15,16 @@
 ## But don't you need something else?
 
 - [x] Perhaps your backend is composed of multiple services. You have to make multiple API calls and merge them before sending the response to the client.
-- [ ] Or maybe the internal API isn't something you'd expose as-is for security or performance reasons.
-- [ ] Could be that there's a legacy backend that you can't change (XML to JSON) but you need to expose a modern API to your clients.
-- [ ] Or you need a pilot for a client, but shipping a new endpoint in the core app takes forever (Show a release pipeline with code reviews etc and engineer rejecting and a snail etc...)
+- [x] Maybe some backend deetails should not be exposed to the client. You need to filter and reshape the data.
+- [x] Or say you need a pilot: the client wants new endpoints, but shipping them through the release pipeline is too slow.
 
 * In any case, you need a logic layer between the client and the backend.
-* And we already have one, right? Just write it in the gateway...
+* And we already have one, right? Just write it in the gateway we already have...
 * 🚨MEEC🚨 DON'T. DO. THAT.
-* You'll get something hard to test, hard to maintain, and slow to change.
+* You'll get something:
+  * hard to test
+  * hard to maintain
+  * slow to change.
 * The gateway is the wrong place for product logic. 💀 I learned this the hard way.
 
 * All you need is a Friend, a Best Friend Forever, a BFF 💖 
