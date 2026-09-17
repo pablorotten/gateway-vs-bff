@@ -30,16 +30,15 @@
 * All you need is a Friend, a Best Friend Forever, a BFF 💖 
 
 ## What is a BFF?
-* BFF stands for **Backend for Frontend**. 
-* A BFF is a service that sits between your client and your backend services. 
-
+* BFF stands for **Backend for Frontend**.
+* A BFF is a small app that sits right in front of your backend. Still inside your network.
 * In a BFF you can:
-
-The goal of a BFF is to adapt your API to the specific needs, requirements and experience of a specific client. You could not care and just use an API that returns the same data for all clients, or you could have one general purpose API that allows you to filter the data that you need on different clients. Typically, I think that BFF will result in the cleanest solution to this problem.
-
-It is responsible for orchestrating calls to multiple backend services, filtering and reshaping data, and implementing business logic that is specific to the needs of the client.
-
-Can you build your UI views by making single API calls? If yes, then you do not need a bff. If single UI views are requiring 2 to 3 calls, maybe to the same API maybe to multiple API's, then you can alleviate this with a bff.
+  * Merge: A client makes 1 request. The BFF makes several backend calls and merges the results into a single response.
+  * Filter: hide internal fields, keep only what the client should see
+  * Reshape: turn a fat internal payload into a lean public one
+  * Move fast: new endpoints without waiting on the backend release pipeline
+  * Test: unit tests next to the code — you don't deploy a gateway just to check a function
+* That's the application logic. Not gateway config.
 
 ## The trap of fake BFFs
 But I can do that in the gateway itself! 
