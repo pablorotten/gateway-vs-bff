@@ -34,11 +34,9 @@
 * A BFF is a small app that sits right in front of your backend. Still inside your network.
 * In a BFF you can:
   * Merge: A client makes 1 request. The BFF makes several backend calls and merges the results into a single response.
-  * Filter: hide internal fields, keep only what the client should see
-  * Reshape: turn a fat internal payload into a lean public one
-  * Move fast: new endpoints without waiting on the backend release pipeline
-  * Test: unit tests next to the code — you don't deploy a gateway just to check a function
-* That's the application logic. Not gateway config.
+  * Filter: Your Internal API might expose sensitive data, the BFF can filter it out, keep only what the client should see
+  * Fast: play around fast with endpoints without touching the core product. It's safer — the main app stays intact and you skip the heavy pipeline.
+  * Test: The BFF is a small, isolated app. Much easier to test than logic baked into a gateway.
 
 ## The trap of fake BFFs
 But I can do that in the gateway itself! 
