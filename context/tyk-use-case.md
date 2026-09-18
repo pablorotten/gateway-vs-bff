@@ -209,3 +209,11 @@ All these gateways share the same core edge concerns:
 - Plugin/middleware systems for customization
 
 The trap is the same across all of them: **they are edge tools, not application layers**. Every gateway has some scripting escape hatch (Kong Lua, Apigee Service Callouts, TYK Virtual Endpoints, Azure `send-request`). Those are for glue, not product logic. The pattern holds: put the gateway at the edge, put a BFF behind it when you need application logic.
+
+## 💀 How we solved the problem
+
+If you're still curious about how it ended. 
+We figured out what endpoints our clients needed, so we got rid of the virtual endpoints / fake BFF and directly implemented the logic in the final app.
+Start with a BFF. Put TYK in front when you need the edge. We did it backwards.
+We still kepy TYK as Gatway using it right for what it is: auth, rate limits, routing, versioning, policies and analytics.
+TYK is excellent at the edge. Don’t force it to be the app.

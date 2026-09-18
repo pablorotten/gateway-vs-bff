@@ -38,43 +38,30 @@
   * Fast: play around fast with endpoints without touching the core product. It's safer — the main app stays intact and you skip the heavy pipeline.
   * Test: The BFF is a small, isolated app. Much easier to test than logic baked into a gateway.
 
-## The trap of fake BFFs
-But I can do that in the gateway itself! 
+## The trap of powerful Gateways
 
-💀 This was exactly my mistake!
-
-Yes. Gateways have some in-gate scripting capabilities that allow you to do some filtering and reshaping of the data. Some examples of this are:
+Yes. Some Gateways have some scripting capabilities that allow you to do some filtering and reshaping of the data
 * Kong functions
 * Apigee Service Callouts
 * Tyk Virtual Endpoints 💀
 
-But those are not meant to be used to implement a BFF. This is not an "App". It's just Gateway configuration.
+But those are not meant to implement an "App". It's just Gateway configuration.
 
-That is fine for glue (rename a field, add a header, mock a 200, forward a call...). It is a bad place for product logic (filter by date, merge orders+customers, reshape per client).
+💀 This was exactly my mistake!
 
-💀 TYK virtual endpoints was my trap. It's such a powerful tool — too good, even. 
-💀 [HERE TALK ABOUT: TYK Virtual Endpoints, single-tenant Docker, chose TYK because OSS / no per-client license, ~20 endpoints, productized, still kept TYK for auth/rate limits/routin]. 
-💀 So good you'll want to use it for everything, and you'll end up using it for something it was never meant for. Don't let this great tool fool you. Be clear about what it's for and what it isn't. If you misuse it and it goes wrong, that's on you.
+💀 TYK Virtual Endpoints was my trap. It's such a powerful feature — too good, even. So we abused it.
 
-### 💀 Our case
+💀 That small JS machine had to handle GBs of data, complex filtering, and orchestration.
 
-We relied too much on the gateway scripting. Specifically the TYK virtual endpoints. That small JS machine had to deal with GB of data, complex filtering, and orchestration. It was a nightmare to maintain and iterate on. 
+Hard to maintain, hard to iterate and hard to test.
 
-And the testing was another nightmare. We had to test the logic in Postman, which was outside the gateway. So we had to deploy the gateway to test the logic. And every time we wanted to change something, we had to deploy the whole gateway. 
+But it was totally our fault. We never added a BFF.
 
 ## How to implement a BFF
 
 BFF is a pattern, not a product. 
 Keep it simple.
 Use a normal HTTP app (Fastify/Hono/Nest/Go) that talks to backends, merges/filters, and returns the client shape.
-
-## 💀 How we solved the problem
-
-If you're still curious about how it ended. 
-We figured out what endpoints our clients needed, so we got rid of the virtual endpoints / fake BFF and directly implemented the logic in the final app.
-Start with a BFF. Put TYK in front when you need the edge. We did it backwards.
-We still kepy TYK as Gatway using it right for what it is: auth, rate limits, routing, versioning, policies and analytics.
-TYK is excellent at the edge. Don’t force it to be the app.
 
 ## Gateway 💖 BFF
 
