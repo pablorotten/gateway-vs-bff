@@ -51,17 +51,17 @@ But those are not meant to implement an "App". It's just Gateway configuration.
 
 💀 TYK Virtual Endpoints was my trap. It's such a powerful feature — too good, even. So we abused it.
 
-💀 That small JS machine had to handle GBs of data, complex filtering, and orchestration.
+💀 That small JS engine had to handle GBs of data, complex filtering, and orchestration.
 
-Hard to maintain, hard to iterate and hard to test.
+This was hard to maintain, hard to iterate and hard to test.
 
 But it was totally our fault. We never added a BFF.
 
 ## How to implement a BFF
 
-BFF is a pattern, not a product. 
-Keep it simple.
-Use a normal HTTP app (Fastify/Hono/Nest/Go) that talks to backends, merges/filters, and returns the client shape.
+* BFF is a pattern, not a product. 
+* You don't need a specific framework or library.
+* Any HTTP app will do, whatever you already use.
 
 ## Gateway 💖 BFF
 
