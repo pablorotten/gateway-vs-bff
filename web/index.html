@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Happy Potato — Trade Potatoes Like a Pro</title>
+<style>
+  :root {
+    --bg: #14100c;
+    --panel: #1e1812;
+    --panel-2: #262019;
+    --line: #3a3128;
+    --text: #f4ead8;
+    --muted: #a08e74;
+    --gold: #f0b429;
+    --up: #4ade80;
+    --down: #f87171;
+    --potato: #c98a4b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: radial-gradient(1200px 600px at 80% -10%, #2a1f12 0%, var(--bg) 60%);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 24px 20px 60px; }
+
+  header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 6px 0 22px;
+  }
+  header img { width: 54px; height: 54px; image-rendering: auto; }
+  .brand h1 { margin: 0; font-size: 22px; letter-spacing: 1px; }
+  .brand p { margin: 2px 0 0; color: var(--muted); font-size: 12px; letter-spacing: 2px; text-transform: uppercase; }
+  .grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px; }
+  @media (max-width: 820px) { .grid { grid-template-columns: 1fr; } }
+
+  .card {
+    background: linear-gradient(180deg, var(--panel), var(--panel-2));
+    border: 1px solid var(--line); border-radius: 16px; padding: 20px;
+  }
+  .card h2 { margin: 0 0 14px; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+
+  .price-row { display: flex; align-items: baseline; gap: 14px; }
+  .price { font-size: 46px; font-weight: 800; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
+  .price .unit { font-size: 16px; color: var(--muted); font-weight: 500; }
+  .delta { font-size: 15px; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
+  .delta.up { color: var(--up); background: rgba(74,222,128,.12); }
+  .delta.down { color: var(--down); background: rgba(248,113,113,.12); }
+
+  canvas { width: 100%; height: 150px; display: block; margin-top: 14px; border-radius: 10px; background: rgba(0,0,0,.25); }
+
+  .stat-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 4px; }
+  .stat { background: rgba(0,0,0,.22); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+  .stat .k { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .stat .v { font-size: 22px; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; }
+
+  .trade { margin-top: 4px; }
+  .qty { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .qty button {
+    width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--line);
+    background: var(--panel-2); color: var(--text); font-size: 20px; cursor: pointer;
+  }
+  .qty button:hover { border-color: var(--gold); }
+  .qty input {
+    flex: 1; height: 40px; text-align: center; font-size: 18px; font-weight: 700;
+    background: rgba(0,0,0,.25); border: 1px solid var(--line); border-radius: 10px; color: var(--text);
+  }
+  .qty input:focus { outline: none; border-color: var(--gold); }
+
+  .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .actions button {
+    padding: 14px; border-radius: 12px; border: none; font-size: 15px; font-weight: 800;
+    cursor: pointer; letter-spacing: .5px; transition: transform .08s ease, filter .15s;
+  }
+  .actions button:active { transform: scale(.97); }
+  .buy { background: linear-gradient(180deg, #4ade80, #22c55e); color: #06210f; }
+  .sell { background: linear-gradient(180deg, #fb923c, #f97316); color: #2a1206; }
+  .actions button:hover { filter: brightness(1.1); }
+
+  .toast {
+    margin-top: 12px; font-size: 13px; min-height: 18px; color: var(--muted);
+  }
+  .toast b { color: var(--text); }
+
+  .trade-list { list-style: none; margin: 0; padding: 0; max-height: 230px; overflow-y: auto; }
+  .trade-list li {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 9px 0; border-bottom: 1px dashed var(--line); font-size: 13px;
+  }
+  .trade-list li:last-child { border-bottom: none; }
+  .trade-list .side { font-weight: 800; font-size: 11px; padding: 2px 8px; border-radius: 6px; letter-spacing: 1px; }
+  .side.buy { background: rgba(74,222,128,.15); color: var(--up); }
+  .side.sell { background: rgba(251,146,60,.15); color: #fb923c; }
+  .time { color: var(--muted); font-size: 11px; }
+
+  footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 30px; }
+  .mascot { position: fixed; right: 18px; bottom: 14px; width: 92px; opacity: .9; pointer-events: none; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <img src="img/Potato%20Vegetable%20Sticker%20by%20TeaBag.gif" alt="potato mascot" />
+      <div class="brand">
+        <h1>Happy Potato</h1>
+        <p>Trading potatoes. Seriously.</p>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- LEFT: market + trade -->
+      <div>
+        <div class="card">
+          <h2>POTATO / USD — Live Market</h2>
+          <div class="price-row">
+            <div class="price" id="price">$0.00<span class="unit">/ kg</span></div>
+            <div class="delta up" id="delta">+0.00%</div>
+          </div>
+          <canvas id="chart"></canvas>
+        </div>
+
+        <div class="card" style="margin-top:18px">
+          <h2>Place Order</h2>
+          <div class="trade">
+            <div class="qty">
+              <button id="minus">−</button>
+              <input id="qty" type="number" min="1" value="10" />
+              <span style="color:var(--muted);font-size:13px">kg</span>
+              <button id="plus">+</button>
+            </div>
+            <div class="actions">
+              <button class="buy" id="buyBtn">BUY POTATOES</button>
+              <button class="sell" id="sellBtn">SELL POTATOES</button>
+            </div>
+            <div class="toast" id="toast"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: portfolio + trades -->
+      <div>
+        <div class="card">
+          <h2>Your Portfolio</h2>
+          <div class="stat-row">
+            <div class="stat"><div class="k">Cash</div><div class="v" id="cash">$1,000</div></div>
+            <div class="stat"><div class="k">Potatoes</div><div class="v" id="holdings">0 kg</div></div>
+            <div class="stat"><div class="k">Net worth</div><div class="v" id="networth">$1,000</div></div>
+            <div class="stat"><div class="k">P/L</div><div class="v" id="pnl">$0</div></div>
+          </div>
+          <div style="text-align:center;margin-top:14px">
+            <img id="mood" src="img/Potato%20Vegetable%20Sticker%20by%20TeaBag.gif" width="70" alt="mood" />
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:18px">
+          <h2>Recent Trades</h2>
+          <ul class="trade-list" id="trades"><li style="color:var(--muted)">No trades yet. Go buy a potato.</li></ul>
+        </div>
+      </div>
+    </div>
+
+    <footer>Happy Potato &copy; 2026 &middot; Best served mashed &middot; Not financial advice (obviously)</footer>
+  </div>
+
+  <img class="mascot" id="mascot" src="img/potato%20dancing%20STICKER.gif" alt="" />
+
+<script>
+// ---------------------------------------------------------------------------
+// Happy Potato — front-end demo. Prices are simulated locally for now; the
+// real prices/orders will come from the API once it exists.
+// ---------------------------------------------------------------------------
+
+const START_BALANCE = 1000;
+let state = JSON.parse(localStorage.getItem("spud") || "null") || {
+  cash: START_BALANCE,
+  holdings: 0,
+  price: 4.20,
+  history: Array.from({ length: 60 }, () => 4.20),
+  trades: [],
+  mood: "img/Potato%20Vegetable%20Sticker%20by%20TeaBag.gif",
+};
+
+const $ = (id) => document.getElementById(id);
+const money = (n) => "$" + n.toLocaleString("en-US", { maximumFractionDigits: 2 });
+const save = () => localStorage.setItem("spud", JSON.stringify(state));
+
+// --- market simulation -----------------------------------------------------
+function nextPrice() {
+  const drift = (Math.random() - 0.48) * 0.35;
+  return Math.max(0.5, +(state.price + drift).toFixed(2));
+}
+
+// --- chart -----------------------------------------------------------------
+const canvas = $("chart");
+const ctx = canvas.getContext("2d");
+function drawChart() {
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  canvas.width = w * dpr; canvas.height = h * dpr;
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, w, h);
+
+  const data = state.history;
+  const min = Math.min(...data), max = Math.max(...data);
+  const pad = (max - min) * 0.2 || 1;
+  const lo = min - pad, hi = max + pad;
+  const x = (i) => (i / (data.length - 1)) * w;
+  const y = (v) => h - ((v - lo) / (hi - lo)) * h;
+
+  const up = data[data.length - 1] >= data[0];
+  const color = up ? "#4ade80" : "#f87171";
+
+  ctx.beginPath();
+  ctx.moveTo(0, y(data[0]));
+  data.forEach((v, i) => ctx.lineTo(x(i), y(v)));
+  ctx.lineTo(w, h); ctx.lineTo(0, h); ctx.closePath();
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, up ? "rgba(74,222,128,.25)" : "rgba(248,113,113,.25)");
+  grad.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = grad; ctx.fill();
+
+  ctx.beginPath();
+  ctx.moveTo(0, y(data[0]));
+  data.forEach((v, i) => ctx.lineTo(x(i), y(v)));
+  ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+}
+
+// --- render ----------------------------------------------------------------
+function render() {
+  const price = state.price;
+  $("price").innerHTML = money(price) + '<span class="unit">/ kg</span>';
+
+  const prev = state.history[state.history.length - 2] ?? price;
+  const pct = ((price - prev) / prev) * 100;
+  const delta = $("delta");
+  delta.textContent = (pct >= 0 ? "+" : "") + pct.toFixed(2) + "%";
+  delta.className = "delta " + (pct >= 0 ? "up" : "down");
+
+  $("cash").textContent = money(state.cash);
+  $("holdings").textContent = state.holdings + " kg";
+  const net = state.cash + state.holdings * price;
+  $("networth").textContent = money(net);
+  const pnl = net - START_BALANCE;
+  const pnlEl = $("pnl");
+  pnlEl.textContent = (pnl >= 0 ? "+" : "") + money(pnl);
+  pnlEl.style.color = pnl >= 0 ? "var(--up)" : "var(--down)";
+
+  drawChart();
+}
+
+function renderTrades() {
+  const ul = $("trades");
+  if (!state.trades.length) {
+    ul.innerHTML = '<li style="color:var(--muted)">No trades yet. Go buy a potato.</li>';
+    return;
+  }
+  ul.innerHTML = state.trades.slice(0, 20).map((t) =>
+    `<li>
+      <span><span class="side ${t.side}">${t.side.toUpperCase()}</span> ${t.qty} kg</span>
+      <span>${money(t.price)}/kg <span class="time">${t.time}</span></span>
+    </li>`).join("");
+}
+
+function setMood(src) {
+  $("mood").src = src;
+  $("mascot").src = src;
+}
+
+// --- trading ---------------------------------------------------------------
+function trade(side) {
+  const qty = Math.max(1, parseInt($("qty").value) || 1);
+  const price = state.price;
+  const toast = $("toast");
+
+  const error = side === "buy"
+    ? (qty * price > state.cash ? "Insufficient funds" : null)
+    : (qty > state.holdings ? "Not enough potatoes" : null);
+
+  if (error) {
+    toast.innerHTML = `<span style="color:var(--down)">Rejected: ${error}</span>`;
+    setMood("img/Happy%20Celebration%20Sticker%20by%20Sad%20Potato%20Club.gif");
+    return;
+  }
+
+  if (side === "buy") { state.cash -= qty * price; state.holdings += qty; }
+  else { state.cash += qty * price; state.holdings -= qty; }
+
+  state.trades.unshift({ side, qty, price, time: new Date().toLocaleTimeString().slice(0, 5) });
+  state.trades = state.trades.slice(0, 50);
+
+  toast.innerHTML = `${side === "buy" ? "Bought" : "Sold"} <b>${qty} kg</b> @ ${money(price)}`;
+  setMood(side === "buy"
+    ? "img/Happy%20Dance%20Sticker%20by%20GONRYON._.O.gif"
+    : "img/Jump%20Hello%20Sticker%20by%20TeaBag.gif");
+
+  save();
+  render();
+  renderTrades();
+}
+
+// --- tick loop -------------------------------------------------------------
+function tick() {
+  const price = nextPrice();
+  state.price = price;
+  state.history.push(price);
+  if (state.history.length > 60) state.history.shift();
+  render();
+  save();
+}
+
+// --- wire up ---------------------------------------------------------------
+$("buyBtn").addEventListener("click", () => trade("buy"));
+$("sellBtn").addEventListener("click", () => trade("sell"));
+$("plus").addEventListener("click", () => $("qty").stepUp());
+$("minus").addEventListener("click", () => $("qty").stepDown());
+window.addEventListener("resize", drawChart);
+
+renderTrades();
+render();
+tick();
+setInterval(tick, 3000);
+</script>
+</body>
+</html>
