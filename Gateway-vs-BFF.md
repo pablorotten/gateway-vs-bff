@@ -1,11 +1,11 @@
 # Gateway vs BFF
 
 ## You need a Gateway ✔️
-* You've got a web app.
-* Happy users. They use it every day.
+* You've got an amazing web app for selling... potatos
+* The app is designed for humans, but you want to reach beyond the browser
 * Then the ideas start coming in.
   * Ship a mobile app
-  * Integrate with a 3rd party service
+  * Integrate with a 3rd party services
   * Provide access to bots and agents
 * Either way you need a REST API
 * Exposing endpoints can be dangerous: scrapers, brute force, noisy neighbors.
@@ -14,12 +14,12 @@
 
 ## But don't you need something else?
 
-- [x] Perhaps your backend is composed of multiple services. You have to make multiple API calls and merge them before sending the response to the client.
-- [x] Maybe some backend deetails should not be exposed to the client. You need to filter and reshape the data.
-- [x] Or say you need a pilot: the client wants new endpoints, but shipping them through the release pipeline is too slow.
+- Perhaps your backend is really several microservices.
+- Maybe you need to filter and reshape the data before the client sees it.
+- Or say you want to protoype with endpoints skipping the release pipelien
 
-* In any case, you need a logic layer between the client and the backend.
-* And we already have one, right? Just write it in the gateway we already have...
+* In any case, you need a **logic layer** between the client and the backend.
+* And we already have one, right? Just write it in the gateway
 * 🚨MEEC🚨 DON'T. DO. THAT.
 * You'll get something:
   * hard to test
@@ -36,7 +36,7 @@
   * Merge: A client makes 1 request. The BFF makes several backend calls and merges the results into a single response.
   * Filter: Your Internal API might expose sensitive data, the BFF can filter it out, keep only what the client should see
   * Fast: play around fast with endpoints without touching the core product. It's safer — the main app stays intact and you skip the heavy pipeline.
-  * Test: The BFF is a small, isolated app. Much easier to test than logic baked into a gateway.
+  * Test: The BFF is a small, isolated app. Much easier to test than a gateway script
 
 ## The trap of powerful Gateways
 
@@ -49,19 +49,13 @@ But those are not meant to implement an "App". It's just Gateway configuration.
 
 💀 This was exactly my mistake!
 
-💀 TYK Virtual Endpoints was my trap. It's such a powerful feature — too good, even. So we abused it.
+💀 TYK Virtual Endpoints was my trap. It's such a powerful feature that we misused
 
-💀 That small JS engine had to handle GBs of data, complex filtering, and orchestration.
+💀 We forced it's small JS engine to to handle GBs of data, complex filtering, and orchestration.
 
 This was hard to maintain, hard to iterate and hard to test.
 
 But it was totally our fault. We never added a BFF.
-
-## How to implement a BFF
-
-* BFF is a pattern, not a product. 
-* You don't need a specific framework or library.
-* Any HTTP app will do, whatever you already use.
 
 ## Gateway 💖 BFF
 
